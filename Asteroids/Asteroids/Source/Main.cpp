@@ -1,15 +1,26 @@
+#include "stdafx.h"
 #include "Headers\main.h"
-#include <allegro5\allegro.h>
+#include "Headers\resource.h"
 
 int main(int argc, char **argv)
 {
 	Main main;
-	main.display = main.init();
-	if (main.display == NULL)
+	Player player;
+	if (argc > 1)
 	{
-		return -1;
+		for (int i = 0; i <= argc; i++)
+		{
+			if (argv[i] == "-f")
+				main.args[Main::FULLSCREEN] = true;
+			if (argv[i] == "-c")
+				main.args[Main::CONSOLE] = true;
+		}
 	}
-	al_rest(3);
-	al_destroy_display(main.display);
+	main.init();
+	if (main.display == NULL)
+		return -1;
+	while (main.exec_loop()) {}
+	main.destroy();
 	return 0;
 }
+//https://www.allegro.cc/forums/thread/604040/865263#target

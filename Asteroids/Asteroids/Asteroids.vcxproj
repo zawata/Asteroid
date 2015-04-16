@@ -20,7 +20,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -47,18 +47,18 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Zach\Documents\GitHub\Asteroid\include</AdditionalIncludeDirectories>
-      <PrecompiledHeaderFile>Headers\stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Users\Zach\Documents\GitHub\Asteroid\Allegro\include;C:\Users\Zach\Documents\GitHub\Asteroid\Asteroids\Asteroids\Source\Headers</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Zach\Documents\GitHub\Asteroid\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Zach\Documents\GitHub\Asteroid\Allegro\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)allegro-5.1.8-monolith-md-debug.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -85,8 +85,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Headers\Main.h" />
+    <ClInclude Include="Source\Headers\player.h" />
+    <ClInclude Include="Source\Headers\resource.h" />
     <ClInclude Include="Source\Headers\stdafx.h" />
     <ClInclude Include="Source\Headers\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Asteroids.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\ship.png" />
+    <Image Include="Resources\ship1.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
