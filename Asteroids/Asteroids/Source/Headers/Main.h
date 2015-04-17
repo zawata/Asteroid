@@ -23,38 +23,29 @@ private:
 
 	void init_devices()
 	{
-		/*
+		/* // list of commands executed in this loop
 		al_init();
 		al_install_mouse();
 		al_install_keyboard();
 		timer = al_create_timer(1.0 / FPS);
-		display = al_create_display(disp_mode.width, disp_mode.height);
 		event_queue = al_create_event_queue();
 		*/
 		if (!al_init()) {
 			ErrorMessage("Failed to initialize allegro.");
-			exit(-1);
 		}
-
 		timer = al_create_timer(1.0 / FPS);
 		if (!timer) {
 			ErrorMessage("Failed to initialize timer.");
-			exit(-1);
 		}
-
 		if (!al_install_mouse()) {
 			ErrorMessage("Failed to initialize mouse.");
-			exit(-1);
 		}
-
 		if (!al_install_keyboard()) {
 			ErrorMessage("Failed to initialize the keyboard.");
-			exit(-1);
 		}
 		event_queue = al_create_event_queue();
 		if (!event_queue) {
 			ErrorMessage("Failed to initialize event queue.");
-			exit(-1);
 		}
 		return;
 	}
@@ -63,7 +54,6 @@ private:
 		display = al_create_display(disp_mode.width, disp_mode.height);
 		if (!display) {
 			ErrorMessage("Failed to initialize display.");
-			exit(-1);
 		}
 	}
 
@@ -74,7 +64,7 @@ public:
 	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 	ALLEGRO_EVENT ev;
 
-	enum Keys
+	enum Keys //enum to hoold positions of the key array
 	{
 		KEY_UP,
 		KEY_DOWN,
@@ -84,25 +74,25 @@ public:
 		KEY_W,
 		KLENGTH
 	};
-	bool key[KLENGTH];
+	bool key[KLENGTH]; // boolean key array
 
-	enum arg
+	enum arg //enum to hold positions of the command line arguement boolean array
 	{
 		FULLSCREEN,
 		CONSOLE,
 		ARTSY_STYLE,
 		ALENGTH
 	};
-	bool args[ALENGTH];
+	bool args[ALENGTH]; // boolean cammand line array
 
 	void init()
 	{
 		init_devices();
-		if ((args[CONSOLE]))
+		if (args[CONSOLE]) //enable or disable the console
 		{
 			FreeConsole();
 		}
-		if (!args[FULLSCREEN])
+		if (args[FULLSCREEN]) // enable or disable fullscreen
 		{
 			al_init_image_addon();
 			al_init_primitives_addon();
@@ -124,7 +114,7 @@ public:
 		al_start_timer(timer);
 		return;
 	}
-	void ErrorMessage(std::string output)
+	void ErrorMessage(std::string output) // shorten the command to throw errors
 	{
 		al_show_native_message_box(
 			display, 
@@ -133,6 +123,8 @@ public:
 			(char*)output.c_str(),
 			NULL, 
 			ALLEGRO_MESSAGEBOX_ERROR);
+		destroy();
+		exit(-1);
 	}
 	bool exec_loop()
 	{
@@ -144,10 +136,11 @@ public:
 				player.fix_angle();
 				std::cout << player.traits.y_vec << std::endl;
 				std::cout << player.traits.x_vec << std::endl;
-				if (key[KEY_UP]/* && abs(player.traits.y_vec) < 5 && abs(player.traits.x_vec) < 5*/)
+				if (key[KEY_UP])
 				{
-					player.traits.y_vec += (sin(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed);
-					player.traits.x_vec += (cos(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed);
+					player.traits.x_vec += (cos(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //x component vector of movement 
+					player.traits.y_vec += (sin(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //y component vector of movement
+
 				}
 				if (key[KEY_LEFT])
 				{
@@ -157,6 +150,7 @@ public:
 				{
 					player.traits.act_angle = (player.traits.act_angle + 4) % 360;
 				}
+
 				if (player.traits.y_vec > 0)
 				{
 					player.traits.y_vec -= abs(player.traits.y_vec * fric_const);
@@ -191,7 +185,7 @@ public:
 				player.traits.y_pos -= player.traits.y_vec;
 				player.check_bounds(disp_mode.width, disp_mode.height);
 				redraw = true;
-				//flaming = true;
+				//flaming = true; //disabled until i make the rocket bitmap
 				break;
 			}
 			case(ALLEGRO_EVENT_DISPLAY_CLOSE) :
@@ -221,16 +215,7 @@ public:
 				case ALLEGRO_KEY_ESCAPE:
 					return false;
 					break;
-				case ALLEGRO_KEY_Q:
-					std::cout << player.traits.x_pos << std::endl;
-					std::cout << player.traits.y_pos << std::endl;
-					std::cout << player.traits.act_angle << std::endl;
-					std::cout << player.traits.height << std::endl;
-					std::cout << player.traits.width << std::endl;
-					std::cout << player.traits.x_cen << std::endl;
-					std::cout << player.traits.x_cen << std::endl;
-					break;
-				case ALLEGRO_KEY_R:
+				case ALLEGRO_KEY_R: // reset
 					key[Keys::KEY_R] = true;
 					player.traits.x_pos = 200;
 					player.traits.y_pos = 200;
@@ -238,7 +223,7 @@ public:
 					player.traits.x_vec = 0;
 					player.traits.y_vec = 0;
 					break;
-				case ALLEGRO_KEY_W:
+				case ALLEGRO_KEY_W: // wipe
 					key[Keys::KEY_W] = true;
 					al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 					break;
@@ -293,7 +278,7 @@ public:
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
-			if (args[ARTSY_STYLE])
+			if (args[ARTSY_STYLE]) //enable or disable artsy mode ;) 
 			{
 				al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 			}
@@ -324,12 +309,11 @@ public:
 		}
 		return true;
 	}
-	void init_bitmaps()
+	void init_bitmaps() // more to come in this function 
 	{
 		if (!player.player_init())
 		{
 			ErrorMessage("Failed to initialize bitmaps.");
-			exit(-1);
 		}
 		return;
 	}
