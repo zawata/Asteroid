@@ -8,6 +8,7 @@ class Main
 private:
 	const float FPS = 60;
 	bool redraw = true;
+	bool flaming = false;
 	Player player;
 	const float fric_const = 0.015;
 	const float move_speed = 0.25;
@@ -32,34 +33,37 @@ private:
 		*/
 		if (!al_init()) {
 			ErrorMessage("Failed to initialize allegro.");
-			return;
+			exit(-1);
 		}
 
 		timer = al_create_timer(1.0 / FPS);
 		if (!timer) {
 			ErrorMessage("Failed to initialize timer.");
-			return;
+			exit(-1);
 		}
 
 		if (!al_install_mouse()) {
 			ErrorMessage("Failed to initialize mouse.");
-			return;
+			exit(-1);
 		}
 
 		if (!al_install_keyboard()) {
 			ErrorMessage("Failed to initialize the keyboard.");
-			return;
+			exit(-1);
 		}
-		display = al_create_display(disp_mode.width, disp_mode.height);
-		if (!display) {
-			ErrorMessage("Failed to initialize display.");
-			return;
-		}
-
 		event_queue = al_create_event_queue();
 		if (!event_queue) {
 			ErrorMessage("Failed to initialize event queue.");
-			return;
+			exit(-1);
+		}
+		return;
+	}
+	void init_display()
+	{
+		display = al_create_display(disp_mode.width, disp_mode.height);
+		if (!display) {
+			ErrorMessage("Failed to initialize display.");
+			exit(-1);
 		}
 	}
 
@@ -76,6 +80,8 @@ public:
 		KEY_DOWN,
 		KEY_LEFT,
 		KEY_RIGHT,
+		KEY_R,
+		KEY_W,
 		KLENGTH
 	};
 	bool key[KLENGTH];
@@ -84,30 +90,32 @@ public:
 	{
 		FULLSCREEN,
 		CONSOLE,
+		ARTSY_STYLE,
 		ALENGTH
 	};
 	bool args[ALENGTH];
 
 	void init()
 	{
+		init_devices();
 		if ((args[CONSOLE]))
 		{
 			FreeConsole();
 		}
-		if (args[FULLSCREEN])
+		if (!args[FULLSCREEN])
 		{
 			al_init_image_addon();
 			al_init_primitives_addon();
-			al_get_display_mode(al_get_num_display_modes() - 1, &disp_mode);
 			al_set_new_display_flags(ALLEGRO_FULLSCREEN);
+			al_get_display_mode(al_get_num_display_modes() - 1, &disp_mode);
 		}
 		else
 		{
 			disp_mode.width = 640;
 			disp_mode.height = 480;
 		}
+		init_display();
 		al_init_image_addon();
-		init_devices();
 		init_bitmaps();
 		register_events();
 
@@ -141,11 +149,11 @@ public:
 					player.traits.y_vec += (sin(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed);
 					player.traits.x_vec += (cos(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed);
 				}
-				if (key[KEY_LEFT] && player.traits.x_pos >= 4.0)
+				if (key[KEY_LEFT])
 				{
 					player.traits.act_angle = (player.traits.act_angle - 4) % 360;
 				}
-				if (key[KEY_RIGHT] && player.traits.x_pos <= disp_mode.width - al_get_bitmap_width(player.player) - 4.0)
+				if (key[KEY_RIGHT])
 				{
 					player.traits.act_angle = (player.traits.act_angle + 4) % 360;
 				}
@@ -181,7 +189,9 @@ public:
 				}
 				player.traits.x_pos += player.traits.x_vec;
 				player.traits.y_pos -= player.traits.y_vec;
+				player.check_bounds(disp_mode.width, disp_mode.height);
 				redraw = true;
+				//flaming = true;
 				break;
 			}
 			case(ALLEGRO_EVENT_DISPLAY_CLOSE) :
@@ -214,7 +224,6 @@ public:
 				case ALLEGRO_KEY_Q:
 					std::cout << player.traits.x_pos << std::endl;
 					std::cout << player.traits.y_pos << std::endl;
-					std::cout << player.traits.ez_angle << std::endl;
 					std::cout << player.traits.act_angle << std::endl;
 					std::cout << player.traits.height << std::endl;
 					std::cout << player.traits.width << std::endl;
@@ -222,12 +231,16 @@ public:
 					std::cout << player.traits.x_cen << std::endl;
 					break;
 				case ALLEGRO_KEY_R:
+					key[Keys::KEY_R] = true;
 					player.traits.x_pos = 200;
 					player.traits.y_pos = 200;
-					player.traits.ez_angle = 0;
 					player.traits.act_angle = 0;
 					player.traits.x_vec = 0;
 					player.traits.y_vec = 0;
+					break;
+				case ALLEGRO_KEY_W:
+					key[Keys::KEY_W] = true;
+					al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 					break;
 				}
 				break;
@@ -250,7 +263,12 @@ public:
 				case ALLEGRO_KEY_RIGHT:
 					key[Keys::KEY_RIGHT] = false;
 					break;
-
+				case ALLEGRO_KEY_R:
+					key[Keys::KEY_R] = false;
+					break;
+				case ALLEGRO_KEY_W:
+					key[Keys::KEY_W] = false;
+					break;
 				case ALLEGRO_KEY_ESCAPE:
 					return false;
 					break;
@@ -275,14 +293,33 @@ public:
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
-			al_clear_to_color(al_map_rgba(0, 0, 0, 0));
-			al_draw_rotated_bitmap(
-				player.player, 
-				player.traits.x_cen, 
-				player.traits.y_cen, 
-				player.traits.x_pos, 
-				player.traits.y_pos, 
-				(player.traits.act_angle * (M_PI/180)), 0);
+			if (args[ARTSY_STYLE])
+			{
+				al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+			}
+			if (flaming)
+			{
+				al_draw_rotated_bitmap(
+					player.player_flaming,
+					player.traits.x_cen,
+					player.traits.y_cen,
+					player.traits.x_pos,
+					player.traits.y_pos,
+					(player.traits.act_angle * (M_PI / 180)), 0);
+			}
+			else
+			{
+				if (!flaming)
+				{
+					al_draw_rotated_bitmap(
+						player.player_base,
+						player.traits.x_cen,
+						player.traits.y_cen,
+						player.traits.x_pos,
+						player.traits.y_pos,
+						(player.traits.act_angle * (M_PI / 180)), 0);
+				}
+			}
 			al_flip_display();
 		}
 		return true;
@@ -292,13 +329,15 @@ public:
 		if (!player.player_init())
 		{
 			ErrorMessage("Failed to initialize bitmaps.");
+			exit(-1);
 		}
 		return;
 	}
 	void destroy()
 	{
 		al_destroy_timer(timer);
-		al_destroy_bitmap(player.player);
+		al_destroy_bitmap(player.player_base);
+		al_destroy_bitmap(player.player_flaming);
 		al_destroy_display(display);
 		al_destroy_event_queue(event_queue);
 	}

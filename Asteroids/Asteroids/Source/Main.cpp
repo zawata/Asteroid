@@ -14,6 +14,8 @@ int main(int argc, char **argv)
 				main.args[Main::FULLSCREEN] = true;
 			if (argv[i] == "-c")
 				main.args[Main::CONSOLE] = true;
+			if (argv[i] == "-as")
+				main.args[Main::ARTSY_STYLE] = true;
 		}
 	}
 	main.init();
