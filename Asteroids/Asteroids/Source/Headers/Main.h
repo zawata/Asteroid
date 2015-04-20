@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include "player.h"
 
+#ifndef _ANIM_STYLE              //just for now until i decide which one
+#define _ANIM_STYLE 2
+#endif
+
 #ifndef MAIN_H
 #define MAIN_H
 class Main
@@ -8,6 +12,8 @@ class Main
 private:
 	const float FPS = 60;
 	bool redraw = true;
+	unsigned int anim_frame = 1;
+	signed int anim_direc = 1; 
 	bool flaming = false;
 	Player player;
 	const float fric_const = 0.015;
@@ -30,33 +36,21 @@ private:
 		timer = al_create_timer(1.0 / FPS);
 		event_queue = al_create_event_queue();
 		*/
-		if (!al_init()) {
-			ErrorMessage("Failed to initialize allegro.");
-		}
+		display = al_create_display(disp_mode.width, disp_mode.height);
+		if (!display)
+			ErrorMessage("Failed to initialize display.");
 		timer = al_create_timer(1.0 / FPS);
-		if (!timer) {
+		if (!timer)
 			ErrorMessage("Failed to initialize timer.");
-		}
-		if (!al_install_mouse()) {
+		if (!al_install_mouse())
 			ErrorMessage("Failed to initialize mouse.");
-		}
-		if (!al_install_keyboard()) {
+		if (!al_install_keyboard())
 			ErrorMessage("Failed to initialize the keyboard.");
-		}
 		event_queue = al_create_event_queue();
-		if (!event_queue) {
+		if (!event_queue)
 			ErrorMessage("Failed to initialize event queue.");
-		}
 		return;
 	}
-	void init_display()
-	{
-		display = al_create_display(disp_mode.width, disp_mode.height);
-		if (!display) {
-			ErrorMessage("Failed to initialize display.");
-		}
-	}
-
 public:
 	ALLEGRO_TIMER *timer = NULL;
 	ALLEGRO_DISPLAY *display = NULL;
@@ -87,11 +81,11 @@ public:
 
 	void init()
 	{
-		init_devices();
+		if (!al_init())
+			ErrorMessage("Failed to initialize allegro.");
+		al_inhibit_screensaver(true);
 		if (args[CONSOLE]) //enable or disable the console
-		{
 			FreeConsole();
-		}
 		if (args[FULLSCREEN]) // enable or disable fullscreen
 		{
 			al_init_image_addon();
@@ -104,7 +98,7 @@ public:
 			disp_mode.width = 640;
 			disp_mode.height = 480;
 		}
-		init_display();
+		init_devices();
 		al_init_image_addon();
 		init_bitmaps();
 		register_events();
@@ -132,15 +126,41 @@ public:
 		switch (ev.type)
 		{
 			case(ALLEGRO_EVENT_TIMER) :
-			{
 				player.fix_angle();
-				std::cout << player.traits.y_vec << std::endl;
-				std::cout << player.traits.x_vec << std::endl;
+				//std::cout << player.traits.y_vec << std::endl;
+				//std::cout << player.traits.x_vec << std::endl;
 				if (key[KEY_UP])
 				{
 					player.traits.x_vec += (cos(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //x component vector of movement 
 					player.traits.y_vec += (sin(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //y component vector of movement
-
+#if _ANIM_STYLE == 1
+					//animation style 1
+					if (anim_frame == 15)
+						anim_frame = 0;
+					anim_frame++;
+#endif
+#if _ANIM_STYLE == 2
+					// animation style 2
+					if (anim_frame == 15 || anim_frame == 0)
+						anim_direc *= -1;
+					anim_frame = (anim_frame + (1 * anim_direc));
+#endif
+#if _ANIM_STYLE == 3
+					//animation style 3
+					if (anim_frame == 0)
+						anim_frame = 15;
+					else
+						anim_frame = 0;
+#endif
+					flaming = true;
+				}
+				else
+				{
+					if (!key[KEY_UP])
+					{
+						flaming = false;
+						anim_frame = 1;
+					}
 				}
 				if (key[KEY_LEFT])
 				{
@@ -185,14 +205,10 @@ public:
 				player.traits.y_pos -= player.traits.y_vec;
 				player.check_bounds(disp_mode.width, disp_mode.height);
 				redraw = true;
-				//flaming = true; //disabled until i make the rocket bitmap
 				break;
-			}
 			case(ALLEGRO_EVENT_DISPLAY_CLOSE) :
-			{
 				return false;
 				break;
-			}
 			case(ALLEGRO_EVENT_KEY_DOWN) :
 			{
 				switch (ev.keyboard.keycode) {
@@ -217,11 +233,6 @@ public:
 					break;
 				case ALLEGRO_KEY_R: // reset
 					key[Keys::KEY_R] = true;
-					player.traits.x_pos = 200;
-					player.traits.y_pos = 200;
-					player.traits.act_angle = 0;
-					player.traits.x_vec = 0;
-					player.traits.y_vec = 0;
 					break;
 				case ALLEGRO_KEY_W: // wipe
 					key[Keys::KEY_W] = true;
@@ -249,6 +260,11 @@ public:
 					key[Keys::KEY_RIGHT] = false;
 					break;
 				case ALLEGRO_KEY_R:
+					player.traits.x_pos = 200;
+					player.traits.y_pos = 200;
+					player.traits.act_angle = 0;
+					player.traits.x_vec = 0;
+					player.traits.y_vec = 0;
 					key[Keys::KEY_R] = false;
 					break;
 				case ALLEGRO_KEY_W:
@@ -261,31 +277,25 @@ public:
 				break;
 			}
 			case(ALLEGRO_EVENT_MOUSE_AXES) :
-			{
 				break;
-			}
 			case(ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY) :
-			{
 				break;
-			}
 			case(ALLEGRO_EVENT_MOUSE_BUTTON_UP) :
-			{
 				break;
-			}
 			default:
 				break;
 		}
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
-			if (args[ARTSY_STYLE]) //enable or disable artsy mode ;) 
+			if (!args[ARTSY_STYLE]) //enable or disable artsy mode ;) 
 			{
 				al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 			}
 			if (flaming)
 			{
 				al_draw_rotated_bitmap(
-					player.player_flaming,
+					player.player_flaming_sub[anim_frame],
 					player.traits.x_cen,
 					player.traits.y_cen,
 					player.traits.x_pos,
@@ -312,16 +322,17 @@ public:
 	void init_bitmaps() // more to come in this function 
 	{
 		if (!player.player_init())
-		{
 			ErrorMessage("Failed to initialize bitmaps.");
-		}
 		return;
 	}
 	void destroy()
 	{
+		al_inhibit_screensaver(false);
 		al_destroy_timer(timer);
+		player.destroy_anim_sprites();
 		al_destroy_bitmap(player.player_base);
-		al_destroy_bitmap(player.player_flaming);
+		al_destroy_bitmap(player.player_flames_base);
+		player.destroy_anim_sprites();
 		al_destroy_display(display);
 		al_destroy_event_queue(event_queue);
 	}

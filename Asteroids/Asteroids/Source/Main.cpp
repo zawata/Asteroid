@@ -10,8 +10,8 @@ int main(int argc, char **argv)
 	{
 		for (int i = 0; i <= argc; i++)
 		{
-			if (argv[i] == "-f")
-				main.args[Main::FULLSCREEN] = true;
+			//if (argv[i] == "-f")                       // status //
+			//	main.args[Main::FULLSCREEN] = true;      // broken //
 			if (argv[i] == "-c")
 				main.args[Main::CONSOLE] = true;
 			if (argv[i] == "-as")
@@ -25,4 +25,3 @@ int main(int argc, char **argv)
 	main.destroy();
 	return 0;
 }
-//https://www.allegro.cc/forums/thread/604040/865263#target
