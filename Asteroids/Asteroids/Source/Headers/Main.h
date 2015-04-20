@@ -4,7 +4,23 @@
 #ifndef _ANIM_STYLE              //just for now until i decide which one
 #define _ANIM_STYLE 2
 #endif
-
+/* TALLY OF FAVORITES
+* =========1=========
+* smooth down and snap up
+* 
+* 
+* 
+* =========2=========
+* smooth half up and half down
+* 
+* |
+*
+* =========3=========
+* blinking on and off
+* 
+* |
+* 
+*/
 #ifndef MAIN_H
 #define MAIN_H
 class Main
@@ -12,7 +28,7 @@ class Main
 private:
 	const float FPS = 60;
 	bool redraw = true;
-	unsigned int anim_frame = 1;
+	unsigned int anim_frame = 2;
 	signed int anim_direc = 1; 
 	bool flaming = false;
 	Player player;
@@ -135,20 +151,20 @@ public:
 					player.traits.y_vec += (sin(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //y component vector of movement
 #if _ANIM_STYLE == 1
 					//animation style 1
-					if (anim_frame == 15)
+					if (anim_frame == 16)
 						anim_frame = 0;
 					anim_frame++;
 #endif
 #if _ANIM_STYLE == 2
 					// animation style 2
-					if (anim_frame == 15 || anim_frame == 0)
+					if (anim_frame == 0 || anim_frame >= 7)
 						anim_direc *= -1;
 					anim_frame = (anim_frame + (1 * anim_direc));
 #endif
 #if _ANIM_STYLE == 3
 					//animation style 3
 					if (anim_frame == 0)
-						anim_frame = 15;
+						anim_frame = 16;
 					else
 						anim_frame = 0;
 #endif
@@ -307,7 +323,7 @@ public:
 				if (!flaming)
 				{
 					al_draw_rotated_bitmap(
-						player.player_base,
+						player.player_flaming_sub[16],
 						player.traits.x_cen,
 						player.traits.y_cen,
 						player.traits.x_pos,
@@ -325,15 +341,13 @@ public:
 			ErrorMessage("Failed to initialize bitmaps.");
 		return;
 	}
-	void destroy()
+	void destroy() //sometimes crashes here but its irreproducible 
 	{
 		al_inhibit_screensaver(false);
+		al_destroy_display(display);
 		al_destroy_timer(timer);
 		player.destroy_anim_sprites();
-		al_destroy_bitmap(player.player_base);
-		al_destroy_bitmap(player.player_flames_base);
-		player.destroy_anim_sprites();
-		al_destroy_display(display);
+		al_destroy_bitmap(player.player_spritemap);
 		al_destroy_event_queue(event_queue);
 	}
 };

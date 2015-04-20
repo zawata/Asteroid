@@ -3,7 +3,7 @@
 #include "resource.h"
 
 #ifndef _ANIM_LENGTH           //because normal variables arent working
-#define _ANIM_LENGTH 16        //and im too lazy to figure out why
+#define _ANIM_LENGTH 17        //and im too lazy to figure out why
 #endif
 
 #ifndef PLAYER _H
@@ -11,9 +11,10 @@
 class Player
 {
 private:
+	const int player_width = 30;
 public:
-	ALLEGRO_BITMAP *player_base = NULL;
-	ALLEGRO_BITMAP *player_flames_base = NULL;
+	//ALLEGRO_BITMAP *player_base = NULL;
+	ALLEGRO_BITMAP *player_spritemap = NULL;
 	ALLEGRO_BITMAP *player_flaming_sub[_ANIM_LENGTH];
 
 	struct attrib
@@ -31,19 +32,17 @@ public:
 	attrib traits;
 	bool player_init()
 	{
-		player_base = al_load_bitmap("C:/Users/Zach/Documents/GitHub/Asteroid/Asteroids/Asteroids/Resources/ship_smaller.png");
-		player_flames_base = al_load_bitmap("C:/Users/Zach/Documents/GitHub/Asteroid/Asteroids/Asteroids/Resources/ship_smaller_flames.png");
-		if (player_base == NULL || player_flames_base == NULL)
-		{
+		//player_base = al_load_bitmap("C:/Users/Zach/Documents/GitHub/Asteroid/Asteroids/Asteroids/Resources/ship_smaller.png");
+		player_spritemap = al_load_bitmap("C:/Users/Zach/Documents/GitHub/Asteroid/Asteroids/Asteroids/Resources/ship_smaller_flames.png");
+		if (player_spritemap == NULL)
 			return false;
-		}
 		if(!init_anim_sprites())
 			return false;
 		traits.x_pos = 200;
 		traits.y_pos = 200;
 		traits.act_angle = 0;
-		traits.height = al_get_bitmap_height(player_base);
-		traits.width = al_get_bitmap_width(player_base);
+		traits.height = al_get_bitmap_height(player_spritemap);
+		traits.width = player_width;
 		traits.x_cen = (traits.width / 2);
 		traits.y_cen = (traits.height / 2);
 		traits.x_vec = 0;
@@ -52,10 +51,10 @@ public:
 	}
 	bool init_anim_sprites()
 	{
-		for (int i = 0; i <= _ANIM_LENGTH+1; i++)
+		for (int i = 0; i < _ANIM_LENGTH; i++)
 		{
-			player_flaming_sub[i] = NULL;
-			player_flaming_sub[i] = al_create_sub_bitmap(player_flames_base, i * 30, 0, 30, al_get_bitmap_height(player_flames_base));
+			//player_flaming_sub[i] = NULL;
+			player_flaming_sub[i] = al_create_sub_bitmap(player_spritemap, i * player_width, 0, player_width, al_get_bitmap_height(player_spritemap));
 			if (player_flaming_sub[i] == NULL)
 			{
 				std::cout << "executed" << std::endl;
@@ -97,7 +96,7 @@ public:
 	}
 	void destroy_anim_sprites()
 	{
-		for (int i = 0; i <= _ANIM_LENGTH; i++)
+		for (int i = 0; i < _ANIM_LENGTH-1; i++)
 		{
 			al_destroy_bitmap(player_flaming_sub[i]);
 		}
