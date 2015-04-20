@@ -5,7 +5,6 @@
 int main(int argc, char **argv)
 {
 	Main main;
-	Player player;
 	if (argc > 1)
 	{
 		for (int i = 0; i <= argc; i++)

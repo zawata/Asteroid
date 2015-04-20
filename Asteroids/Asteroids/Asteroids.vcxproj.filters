@@ -38,6 +38,9 @@
     <ClInclude Include="Source\Headers\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Headers\projectile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Asteroids.rc">

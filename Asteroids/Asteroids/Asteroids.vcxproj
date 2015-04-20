@@ -86,6 +86,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Headers\Main.h" />
     <ClInclude Include="Source\Headers\player.h" />
+    <ClInclude Include="Source\Headers\projectile.h" />
     <ClInclude Include="Source\Headers\resource.h" />
     <ClInclude Include="Source\Headers\stdafx.h" />
     <ClInclude Include="Source\Headers\targetver.h" />

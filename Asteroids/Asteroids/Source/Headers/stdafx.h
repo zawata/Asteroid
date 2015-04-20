@@ -15,5 +15,5 @@
 #include "allegro5/allegro_native_dialog.h"
 
 #ifndef M_PI
-# define M_PI	3.141592653589793238462643383279502884 /* pi */
+# define M_PI	3.14159265358979323846264338327950288
 #endif

@@ -6,7 +6,7 @@
 #define _ANIM_LENGTH 17        //and im too lazy to figure out why
 #endif
 
-#ifndef PLAYER _H
+#ifndef PLAYER_H
 #define PLAYER_H
 class Player
 {
@@ -32,7 +32,6 @@ public:
 	attrib traits;
 	bool player_init()
 	{
-		//player_base = al_load_bitmap("C:/Users/Zach/Documents/GitHub/Asteroid/Asteroids/Asteroids/Resources/ship_smaller.png");
 		player_spritemap = al_load_bitmap("C:/Users/Zach/Documents/GitHub/Asteroid/Asteroids/Asteroids/Resources/ship_smaller_flames.png");
 		if (player_spritemap == NULL)
 			return false;
