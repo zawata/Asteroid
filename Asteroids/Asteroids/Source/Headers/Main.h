@@ -5,23 +5,7 @@
 #ifndef _ANIM_STYLE              //just for now until i decide which one
 #define _ANIM_STYLE 2
 #endif
-/* TALLY OF FAVORITES
-* =========1=========
-* smooth down and snap up
-*
-*
-*
-* =========2=========
-* smooth half up and half down
-*
-* |||
-*
-* =========3=========
-* blinking on and off
-*
-* |
-*
-*/
+
 #ifndef MAIN_H
 #define MAIN_H
 class Main
@@ -36,6 +20,7 @@ private:
 	Projectile projectile;
 	const float fric_const = 0.015;
 	const float move_speed = 0.25;
+	int current_projectile = 0;
 
 	void register_events()
 	{
@@ -150,7 +135,7 @@ public:
 		{
 			if (key[KEY_UP])
 			{
-				player.traits.x_vec += (cos(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //x component vector of movement 
+				player.traits.x_vec += (cos(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //x component vector of movement
 				player.traits.y_vec += (sin(((360 - player.traits.act_angle) + 90) * (M_PI / 180)) * move_speed); //y component vector of movement
 #if _ANIM_STYLE == 1
 				//animation style 1
@@ -189,9 +174,14 @@ public:
 			{
 				player.traits.act_angle = (player.traits.act_angle + 4) % 360;
 			}
-			if (key[KEY_SPACE])
+			if (key[KEY_SPACE] && projectile.projectile_can_be_fired)
 			{
-				//TODO : make bullets go pew pew
+				std::cout << "executed" << std::endl;
+				if (projectile.place_projectile(player.traits.x_pos, player.traits.y_pos, player.traits.act_angle, player.traits.width, display))
+				{
+					std::cout << "false" << std::endl;
+				}
+				projectile.projectile_can_be_fired = false;
 			}
 			if (player.traits.y_vec > 0)
 			{
@@ -235,34 +225,34 @@ public:
 		case(ALLEGRO_EVENT_KEY_DOWN) :
 		{
 			switch (ev.keyboard.keycode) {
-			case ALLEGRO_KEY_UP:
+			case ALLEGRO_KEY_UP:              // engine
 				key[Keys::KEY_UP] = true;
 				break;
 
-			case ALLEGRO_KEY_DOWN:
+			case ALLEGRO_KEY_DOWN:            // not used
 				key[Keys::KEY_DOWN] = true;
 				break;
 
-			case ALLEGRO_KEY_LEFT:
+			case ALLEGRO_KEY_LEFT:            // turn left
 				key[Keys::KEY_LEFT] = true;
 				break;
 
-			case ALLEGRO_KEY_RIGHT:
+			case ALLEGRO_KEY_RIGHT:           // turn right
 				key[Keys::KEY_RIGHT] = true;
 				break;
 
-			case ALLEGRO_KEY_SPACE:
+			case ALLEGRO_KEY_SPACE:           // fire
 				key[Keys::KEY_SPACE] = true;
 				break;
 
-			case ALLEGRO_KEY_R: // reset
+			case ALLEGRO_KEY_R:               // reset
 				key[Keys::KEY_R] = true;
 				break;
 
-			case ALLEGRO_KEY_W: // wipe
+			case ALLEGRO_KEY_W:               // wipe
 				key[Keys::KEY_W] = true;
 				break;
-			
+
 			case ALLEGRO_KEY_ESCAPE:
 				return false;
 				break;
@@ -290,6 +280,7 @@ public:
 
 			case ALLEGRO_KEY_SPACE:
 				key[Keys::KEY_SPACE] = false;
+				projectile.projectile_can_be_fired = true;
 				break;
 
 			case ALLEGRO_KEY_R:
@@ -325,16 +316,16 @@ public:
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
 			redraw = false;
-			if (!args[ARTSY_STYLE]) //enable or disable artsy mode ;) 
+			if (!args[ARTSY_STYLE]) //enable or disable artsy mode ;)
 				al_clear_to_color(al_map_rgba(0, 0, 0, 0));
 			if (flaming)
 			{
 				al_draw_rotated_bitmap(
-					player.player_flaming_sub[anim_frame],
-					player.traits.x_cen,
-					player.traits.y_cen,
-					player.traits.x_pos,
-					player.traits.y_pos,
+					player .player_flaming_sub[anim_frame],
+					player .traits.x_cen,
+					player .traits.y_cen,
+					player .traits.x_pos,
+					player .traits.y_pos,
 					(player.traits.act_angle * (M_PI / 180)), 0);
 			}
 			else
@@ -342,27 +333,26 @@ public:
 				if (!flaming)
 				{
 					al_draw_rotated_bitmap(
-						player.player_flaming_sub[16],
-						player.traits.x_cen,
-						player.traits.y_cen,
-						player.traits.x_pos,
-						player.traits.y_pos,
+						player .player_flaming_sub[16],
+						player .traits.x_cen,
+						player .traits.y_cen,
+						player .traits.x_pos,
+						player .traits.y_pos,
 						(player.traits.act_angle * (M_PI / 180)), 0);
 				}
 			}
+			projectile.move_all_onscreen_projectiles(disp_mode.width, disp_mode.height);
 			al_flip_display();
 		}
 		return true;
 	}
-	void init_bitmaps() // more to come in this function 
+	void init_bitmaps() // more to come in this function
 	{
-		if (!player.player_init())
-			ErrorMessage("Failed to initialize bitmaps.");
 		if (!player.player_init())
 			ErrorMessage("Failed to initialize bitmaps.");
 		return;
 	}
-	void destroy() //sometimes crashes here but its irreproducible 
+	void destroy() //sometimes crashes here but its irreproducible
 	{
 		al_inhibit_screensaver(false);
 		al_destroy_display(display);

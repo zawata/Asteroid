@@ -35,7 +35,7 @@ public:
 		player_spritemap = al_load_bitmap("C:/Users/Zach/Documents/GitHub/Asteroid/Asteroids/Asteroids/Resources/ship_smaller_flames.png");
 		if (player_spritemap == NULL)
 			return false;
-		if(!init_anim_sprites())
+		if (!init_anim_sprites())
 			return false;
 		traits.x_pos = 200;
 		traits.y_pos = 200;
@@ -52,7 +52,6 @@ public:
 	{
 		for (int i = 0; i < _ANIM_LENGTH; i++)
 		{
-			//player_flaming_sub[i] = NULL;
 			player_flaming_sub[i] = al_create_sub_bitmap(player_spritemap, i * player_width, 0, player_width, al_get_bitmap_height(player_spritemap));
 			if (player_flaming_sub[i] == NULL)
 			{
@@ -95,7 +94,7 @@ public:
 	}
 	void destroy_anim_sprites()
 	{
-		for (int i = 0; i < _ANIM_LENGTH-1; i++)
+		for (int i = 0; i < _ANIM_LENGTH - 1; i++)
 		{
 			al_destroy_bitmap(player_flaming_sub[i]);
 		}
