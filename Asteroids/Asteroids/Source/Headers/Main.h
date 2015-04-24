@@ -350,14 +350,17 @@ public:
 			ErrorMessage("Failed to initialize bitmaps.");
 		return;
 	}
-	void destroy() //sometimes crashes here but its irreproducible
+	void destroy()
 	{
 		al_inhibit_screensaver(false);
 		al_destroy_display(display);
+
 		al_destroy_timer(timer);
+		al_destroy_event_queue(event_queue);
+
 		player.destroy_anim_sprites();
 		al_destroy_bitmap(player.player_spritemap);
-		al_destroy_event_queue(event_queue);
+		projectile.destroy_anim_sprites();
 	}
 };
 #endif
