@@ -22,26 +22,30 @@ public:
 		int speed = 12;
 		int angle;
 		int side = 3;
-		bool is_fired = false;
+		bool is_displayed = false;
 	};
 	attrib traits[_PROJECTILE_NUMBER];
-	bool init_projectile_sprite(int bulletnum, ALLEGRO_DISPLAY *display)
+
+	bool init_projectile_bitmaps(ALLEGRO_DISPLAY *display)
 	{
-		projectile[bulletnum] = al_create_bitmap(traits[bulletnum].side, traits[bulletnum].side);
-		if (projectile == NULL)
+		for (int i = 0; i < _PROJECTILE_NUMBER; i++)
 		{
-			return false;
+			projectile[i] = al_create_bitmap(traits[i].side, traits[i].side);
+			if (projectile == NULL)
+			{
+				return false;
+			}
+			al_set_target_bitmap(projectile[i]);
+			al_clear_to_color(al_map_rgb(255, 255, 255));
+			al_set_target_backbuffer(display);
 		}
-		al_set_target_bitmap(projectile[bulletnum]);
-		al_clear_to_color(al_map_rgb(255, 255, 255));
-		al_set_target_backbuffer(display);
 		return true;
 	}
 	void move_all_onscreen_projectiles(float s_width, float s_height)
 	{
 		for (int i = 0; i < _PROJECTILE_NUMBER; i++)
 		{
-			if (projectile[i] != NULL)
+			if (traits[i].is_displayed)
 			{
 				move_projectile(i);
 				check_bounds(s_width, s_height, i);
@@ -49,19 +53,16 @@ public:
 			}
 		}
 	}
-	bool place_projectile(int playerx, int playery, int angle, int bitmapheight, ALLEGRO_DISPLAY *display)
+	void place_projectile(int playerx, int playery, int angle, int bitmapheight)
 	{
 		int new_bullet = get_next_available_projectile();
 		if (new_bullet == -1)
-			return false;
-		if (!init_projectile_sprite(new_bullet, display))
-		{
-			return false;
-		}
-		traits[new_bullet].angle = angle;
-		traits[new_bullet].x_pos = playerx + (cos(((360 - angle) + 90) * (M_PI / 180)) * bitmapheight);
-		traits[new_bullet].y_pos = playery + (sin(((360 - angle) + 90) * (M_PI / 180)) * bitmapheight);
-		return true;
+			return;
+		traits[new_bullet].angle = ((360 - angle)+180);
+		traits[new_bullet].x_pos = playerx + (cos((angle - 90) * (M_PI / 180)) * bitmapheight);
+		traits[new_bullet].y_pos = playery + (sin((angle - 90) * (M_PI / 180)) * bitmapheight);
+		traits[new_bullet].is_displayed = true;
+		return;
 	}
 	void move_projectile(int bulletnum)
 	{
@@ -72,46 +73,42 @@ public:
 	{
 		for (int i = 0; i < _PROJECTILE_NUMBER; i++)
 		{
-			if (projectile[i] != NULL)
+			if (traits[i].is_displayed)
 			{
 				al_draw_bitmap(projectile[i], traits[i].x_pos, traits[i].y_pos, 0);
-			}
-			else
-			{
-				std::cout << "draw" << std::endl;
 			}
 		}
 		return;
 	}	
 	void check_bounds(float s_width, float s_height, int bulletnum)
 	{
-		if (projectile[bulletnum] == NULL)
+		if (!traits[bulletnum].is_displayed)
 		{
 			return;
 		}
 		if (traits[bulletnum].x_pos < 0 - traits[bulletnum].side)
 		{
-			al_destroy_bitmap(projectile[bulletnum]);
+			remove_projectile(bulletnum);
 			return;
 		}
 		else
 		{
 			if (traits[bulletnum].x_pos > s_width + traits[bulletnum].side)
 			{
-				al_destroy_bitmap(projectile[bulletnum]);
+				remove_projectile(bulletnum);
 				return;
 			}
 		}
 		if (traits[bulletnum].y_pos < 0 - traits[bulletnum].side)
 		{
-			al_destroy_bitmap(projectile[bulletnum]);
+			remove_projectile(bulletnum);
 			return;
 		}
 		else
 		{
 			if (traits[bulletnum].y_pos > s_height + traits[bulletnum].side)
 			{
-				al_destroy_bitmap(projectile[bulletnum]);
+				remove_projectile(bulletnum);
 				return;
 			}
 		}
@@ -121,13 +118,19 @@ public:
 	{
 		for (int i = 0; i <= _PROJECTILE_NUMBER - 1; i++)
 		{
-			if (projectile[i] == NULL)
+			if (!traits[i].is_displayed)
 			{
 				std::cout << i << std::endl;
 				return i; //bullet can be created
 			}
 		}
 		return -1; // no bullets can be created
+	}
+	void remove_projectile(int bulletnum)
+	{
+		traits[bulletnum].x_pos = 0;
+		traits[bulletnum].y_pos = 0;
+		traits[bulletnum].is_displayed = false;
 	}
 	void destroy_anim_sprites()
 	{

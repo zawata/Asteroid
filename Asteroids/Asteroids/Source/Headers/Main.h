@@ -176,11 +176,7 @@ public:
 			}
 			if (key[KEY_SPACE] && projectile.projectile_can_be_fired)
 			{
-				std::cout << "executed" << std::endl;
-				if (projectile.place_projectile(player.traits.x_pos, player.traits.y_pos, player.traits.act_angle, player.traits.width, display))
-				{
-					std::cout << "false" << std::endl;
-				}
+				projectile.place_projectile(player.traits.x_pos, player.traits.y_pos, player.traits.act_angle, player.traits.width);
 				projectile.projectile_can_be_fired = false;
 			}
 			if (player.traits.y_vec > 0)
@@ -318,6 +314,7 @@ public:
 			redraw = false;
 			if (!args[ARTSY_STYLE]) //enable or disable artsy mode ;)
 				al_clear_to_color(al_map_rgba(0, 0, 0, 0));
+			projectile.move_all_onscreen_projectiles(disp_mode.width, disp_mode.height);
 			if (flaming)
 			{
 				al_draw_rotated_bitmap(
@@ -341,7 +338,6 @@ public:
 						(player.traits.act_angle * (M_PI / 180)), 0);
 				}
 			}
-			projectile.move_all_onscreen_projectiles(disp_mode.width, disp_mode.height);
 			al_flip_display();
 		}
 		return true;
@@ -349,6 +345,8 @@ public:
 	void init_bitmaps() // more to come in this function
 	{
 		if (!player.player_init())
+			ErrorMessage("Failed to initialize bitmaps.");
+		if (!projectile.init_projectile_bitmaps(display))
 			ErrorMessage("Failed to initialize bitmaps.");
 		return;
 	}
